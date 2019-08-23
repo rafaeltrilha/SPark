@@ -1,0 +1,207 @@
+item 1 -> Numero de HOSTS únicos
+
+
+import java.util.List;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
+
+public class HostsUnicos {
+
+	public static void main(String[] args) {
+
+		int totalHosts = 0;
+		
+// configuração do Spark
+		SparkConf conf = new SparkConf().setMaster("local")
+				                        .setAppName("HostsProcessor");
+		JavaSparkContext ctx = new JavaSparkContext(conf);
+
+// leitura os dados da log
+		JavaRDD<String> hosts = ctx.textFile("C://Users//Rafael//Desktop//Teste_Semantix");
+
+// faz o map com os hosts
+		JavaPairRDD<String, Integer> agrupaHosts = hosts
+				.mapToPair(s -> new Tuple2<String, Integer>(s.split(" ")[0], 1));
+		JavaPairRDD<String, Integer> numeroHosts = agrupaHosts.reduceByKey((x, y) -> x + y);
+		List<Tuple2<String, Integer>> lista = numeroHosts.collect();
+
+// mostra os hosts e o número de vezes que aparece no log
+		for (Tuple2<String, Integer> hostNumero : lista) {
+			totalHosts = totalHosts + 1;
+		}
+
+		System.out.println("Total de Hosts unicos: " + totalHosts);
+	}
+
+}
+
+/***
+item 2 -> O total de erros 404
+
+import java.util.List;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+public class TotalErros404 {
+
+	public static void main(String[] args) {
+
+		int total404 = 0;
+		
+// configuração do Spark
+		SparkConf conf = new SparkConf().setMaster("local")
+				                        .setAppName("ErrorProcessor");
+		JavaSparkContext ctx = new JavaSparkContext(conf);
+
+// leitura dos dados da log
+		JavaRDD<String> linhas = ctx.textFile("C://Users//Rafael//Desktop//Teste_Semantix");
+
+// filtra os registros com erros 404
+		JavaRDD<String> linhasFiltradas = linhas.filter(s -> s.contains(" 404 -"));
+
+// imprime linhas com totais de erros 404
+		List<String> resultados = linhasFiltradas.collect();
+		for (String linha : resultados) {
+			total404 = total404 + 1;
+		}
+		
+		System.out.println("Total de error 404: " + total404);
+
+		ctx.close();
+
+	}
+
+}
+
+
+/***
+item 3 -> Os 5 URLs que mais causaram erro 404
+
+import java.util.List;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
+
+public class UrlMaisErros404 {
+
+	public static void main(String[] args) {
+
+// configuração do Spark
+		SparkConf conf = new SparkConf().setMaster("local").setAppName("ErrorProcessor");
+		JavaSparkContext ctx = new JavaSparkContext(conf);
+
+// leitura dos dados da log
+		JavaRDD<String> linhas = ctx.textFile("C://Users//Rafael//Desktop//Teste_Semantix");
+
+// filtra os registros com erros 404
+		JavaRDD<String> linhasFiltradas = linhas.filter(s -> s.contains(" 404 -"));
+
+		JavaPairRDD<String, Integer> agrupaHosts = linhasFiltradas
+				.mapToPair(s -> new Tuple2<String, Integer>(s.split(" ")[6], 1));
+
+		JavaPairRDD<String, Integer> numeroHosts = agrupaHosts.reduceByKey((x, y) -> x + y).sortByKey(false).take(5);
+		List<Tuple2<String, Integer>> lista = numeroHosts.collect();
+
+// imprime as 5 linhas com as URLs que mais causaram erros 404
+			for (Tuple2<String, Integer> hostNumero : lista) {
+				System.out.println("URL: " + hostNumero._1());
+			}
+	}
+
+}
+
+
+/***
+Item 4 - Quantidade de erros 404 por dia.
+
+import java.util.List;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
+
+public class Erros404PorDia {
+
+	public static void main(String[] args) {
+
+// configuração do Spark
+		SparkConf conf = new SparkConf().setMaster("local").setAppName("ErrorProcessor");
+		JavaSparkContext ctx = new JavaSparkContext(conf);
+
+// leitura dos dados da log
+		JavaRDD<String> linhas = ctx.textFile("C://Users//Rafael//Desktop//Teste_Semantix");
+
+// filtra os registros com erros 404
+		JavaRDD<String> linhasFiltradas = linhas.filter(s -> s.contains(" 404 -"));
+
+		JavaPairRDD<String, Integer> agrupaHosts = linhasFiltradas
+				.mapToPair(s -> new Tuple2<String, Integer>(s.split(" ")[3], 1));
+
+		JavaPairRDD<String, Integer> numeroHosts = agrupaHosts.reduceByKey((x, y) -> x + y);
+		List<Tuple2<String, Integer>> lista = numeroHosts.collect();
+
+// imprime a quantidade de erros 404 por dia
+		for (Tuple2<String, Integer> hostNumero : lista) {
+			System.out.println("Dia: " + hostNumero._1());
+			System.out.println("Qtde de 404: " + hostNumero._2());
+			}
+
+		}
+
+}
+
+/***
+item 5 - O total de bytes retornados
+
+import java.util.List;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
+
+public class TotalBytesRetornados {
+
+	public static void main(String[] args) {
+
+		int totalBytes = 0;
+		
+// configuração do Spark
+		SparkConf conf = new SparkConf().setMaster("local").setAppName("ErrorProcessor");
+		JavaSparkContext ctx = new JavaSparkContext(conf);
+
+// leitura dos dados da log
+		JavaRDD<String> linhas = ctx.textFile("C://Users//Rafael//Desktop//Teste_Semantix");
+		
+		JavaPairRDD<String, Integer> agrupaHosts = linhas
+				.mapToPair(s -> new Tuple2<String, Integer>(s.split(" ")[7], 1));
+
+		List<Tuple2<String, Integer>> lista = agrupaHosts.collect();
+
+// imprime total de bytes retornados
+		for (Tuple2<String, Integer> hostNumero : lista) {
+			totalBytes = totalBytes + hostNumero._2;
+			}
+		
+		System.out.println("Qtde de bytes retornados: " + totalBytes);
+
+		}
+
+}
+
